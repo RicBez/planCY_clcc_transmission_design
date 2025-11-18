@@ -481,19 +481,19 @@ def design_cycloidal_cl_stage(inner_d_ring):
         rounded_Nmin = compute_value(Dmin, Dr)
         print(f"\nApprox. maximum number of rollers: {rounded_N}")
         print(f"Thus, the maximum allowed transmission ratio is 1:{rounded_N - 1}")
-        print(f"\nApprox. minimum number of rollers: {rounded_Nmin}")
-        print(f"Thus, the minimum allowed transmission ratio is 1:{rounded_Nmin - 1}")
+        #print(f"\nApprox. minimum number of rollers: {rounded_Nmin}")
+        #print(f"Thus, the minimum allowed transmission ratio is 1:{rounded_Nmin - 1}")
 
         # loop per scegliere il rapporto desiderato
         while True:
             u_target = float(input("Target transmission ratio u: [ex: for 1:30 write 30]: "))
-            if (u_target <= (rounded_N - 1)) & (u_target >= (rounded_Nmin - 1)):
+            if (u_target <= (rounded_N - 1)): #& (u_target >= (rounded_Nmin - 1)):
                 N = u_target + 1
                 print(f"\nTarget ratio accepted. Number of rollers N = {N}")
                 break
             else:
                 print(f"Target ratio too high! Maximum allowed is 1:{rounded_N - 1}")
-                print(f"The minimum allowed transmission ratio is 1:{rounded_Nmin - 1}")
+                #print(f"The minimum allowed transmission ratio is 1:{rounded_Nmin - 1}")
                 modify = input("Do you want to modify Dr, Encmax, or margin? (y/n): ").strip().lower()
                 if modify == 'y':
                     print("Let's re-enter the parameters.\n")
@@ -514,23 +514,27 @@ def design_cycloidal_cl_stage(inner_d_ring):
     print(f"Bearing outer diameter Dm: {Dm:.2f} mm")
     print(f"Dmin = {Dmin:.2f} mm, Dmax = {Dmax:.2f} mm")
     print(f"Approx. max number of rollers: {rounded_N}")
-    print(f"Approx. min number of rollers: {rounded_Nmin}")
+    #print(f"Approx. min number of rollers: {rounded_Nmin}")
     print(f"Chosen target transmission ratio: 1:{u_target}")
     print(f"Number of rollers used: N = {N}")
         
     Dmin = compute_Dmin(N, Dr)
     print(f"\nAllowed pitch diameter range: {(Dmin):.1f} mm → {Dmax:.1f} mm")
     
-    D_pitch = float(input("Enter pitch diameter Dp within that range [mm]: "))
-    if not (Dmin <= D_pitch <= Dmax):
-        print("Invalid Dp, out of range.")
-        return None
+    # D_pitch = float(input("Enter pitch diameter Dp within that range [mm]: "))
+    # if not (Dmin <= D_pitch <= Dmax):
+    #    print("Invalid Dp, out of range.")
+    #    return None
     
     # Dmin = inner_d_ring + 2*margin + Dr
     #dmin = inner_d_ring + 2*margin
     finish = False
     while finish == False:
         while True:
+            D_pitch = float(input("Enter pitch diameter Dp within that range [mm]: "))
+            if not (Dmin <= D_pitch <= Dmax):
+                print("Invalid Dp, out of range.")
+                return None
             ecc = float(input("Enter eccentricity [mm]: "))
             d = D_pitch
             if (d - 2*ecc) > Dmin:
@@ -554,7 +558,7 @@ def design_cycloidal_cl_stage(inner_d_ring):
         RH = pin/2 + ecc
         print(f"The resulting diameter for the holes in the cycloidal disk is {RH*2:.2f} mm.")
         Dc = (((D_pitch - Dr - 2*ecc) + Dm)/2)
-        print(f"The diameter for the carrier pins is {Dc:.2f} mm.")
+        print(f"The diameter for the carrier is {Dc:.2f} mm.")
         Rc = Dc/2
         ###
         R_pitch = D_pitch / 2
@@ -648,6 +652,8 @@ def combine_stages(inner_planet, outer_cycloid, variant):
         r_planet = ((Zr - Zs)/2)*m/2
 
         ax.set_aspect("equal")
+        ax.set_xlim(-60, 60)
+        ax.set_ylim(-60, 60)
         xs, ys = make_circle(0, 0, r_sun)
         ax.plot(xs, ys, "red", linestyle='--')
         xr, yr = make_circle(0, 0, r_ring)
@@ -667,7 +673,7 @@ def combine_stages(inner_planet, outer_cycloid, variant):
         N = outer_cycloid["N"]
         cyc = make_cycloidal_profile(ecc, roll_r, N, R_pitch)
         R = R_pitch
-        fig, ax = plt.subplots(figsize=(14, 7))        
+        fig, ax = plt.subplots(figsize=(20, 10))        
         plot_planet(ax)
         ax.plot(cyc[:, 0], cyc[:, 1], "blue", lw=2)
         circle = plt.Circle((ecc, 0), Db/2, fill=False, color='grey', linestyle='--', linewidth=1.5)
@@ -706,7 +712,11 @@ def combine_stages(inner_planet, outer_cycloid, variant):
             cyc1 = make_cycloidal_profile(ecc, roll_r, N1, R1_pitch)
             cyc2 = make_cycloidal_profile(ecc, roll_r, N2, R2_pitch)
 
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+            ax1.set_xlim(-60, 60)
+            ax1.set_ylim(-60, 60)
+            ax2.set_xlim(-60, 60)
+            ax2.set_ylim(-60, 60)
             for ax, cyc, N, stg, R in zip([ax1, ax2], [cyc1, cyc2], [N1, N2], ["Stage 1", "Stage 2"], [R1_pitch, R2_pitch]):
                 plot_planet(ax)
                 ax.plot(cyc[:, 0], cyc[:, 1], "blue", lw=2)
